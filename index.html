@@ -3,814 +3,1488 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merry Christmas</title>
+    <title>Magic Particles</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;800&display=swap" rel="stylesheet">
+
     <style>
-        body{margin:0;overflow:hidden;background-color:#000;font-family:'Montserrat',sans-serif;user-select:none}
-        #background-image{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0}
-        #dark-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle,rgba(0,0,0,0) 0%,rgba(0,0,0,0.4) 100%);z-index:1;pointer-events:none}
-        #canvas-container{width:100vw;height:100vh;position:absolute;top:0;left:0;z-index:2;transition:opacity .3s}
-        #ui-layer{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;padding-top:40px}
-        #main-title{font-family:'Great Vibes',cursive;font-size:65px;color:#ffb7c5;margin:0;text-shadow:0 0 5px rgba(0,0,0,0.5);animation:floatTitle 3s ease-in-out infinite}
-        #mode-indicator{font-size:10px;color:rgba(255,255,255,0.9);letter-spacing:4px;text-transform:uppercase;margin-top:5px;text-shadow:0 0 2px #000}
-        #lyrics-container{position:absolute;bottom:140px;width:100%;text-align:center;z-index:20;pointer-events:none}
-        #lyrics-text{font-family:'Times New Roman',Times,serif;font-size:22px;font-style:italic;font-weight:500;color:#fff;text-shadow:0 0 4px rgba(0,0,0,0.9);padding:0 20px}
-        #webcam-wrapper{position:absolute;bottom:30px;left:30px;width:150px;height:112px;z-index:50;background:#000;border:1px solid rgba(255,255,255,0.3);border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,0.5);overflow:hidden}
-        #webcam-canvas{width:100%;height:100%;transform:scaleX(-1);border-radius:12px}
-        #cam-overlay{position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:4px;z-index:25;background:rgba(0,0,0,0.5);padding:2px 6px;border-radius:10px}
-        .rec-dot{width:5px;height:5px;background-color:#f36;border-radius:50%;animation:blink 1.5s infinite}
-        .rec-text{color:#fff;font-size:8px;font-weight:600;letter-spacing:1px}
-        #cam-stats{position:absolute;bottom:0;left:0;width:100%;text-align:center;font-size:8px;font-weight:500;color:#ffb7c5;z-index:26;background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);padding:4px 0}
+        body { 
+            margin: 0; overflow: hidden; background-color: #050505; 
+            font-family: 'Montserrat', sans-serif; user-select: none;
+        }
+        #background-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+            background: radial-gradient(circle at center, #9c4b75 0%, #5e2240 45%, #1f0814 100%);
+        }
+        #noise-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+            opacity: 0.04; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 2; }
         
-        @keyframes floatTitle{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-        @keyframes blink{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
-        @keyframes driftMark{from{transform:translate(0,0)}to{transform:translate(-10px,-5px)}}
+        #visualizer-canvas {
+            position: absolute; 
+            bottom: 25px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            width: 40%; 
+            height: 60px; 
+            z-index: 15; 
+            pointer-events: none; 
+            opacity: 0.8; 
+        }
+        
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; pointer-events: none;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 50px 0 30px 0;
+        }
+        h1 { 
+            color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 30px; font-weight: 800; 
+            text-transform: uppercase; letter-spacing: 5px; margin: 0; 
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.6); opacity: 0; 
+            animation: fadeIn 3s ease-out forwards 1s;
+        }
+        .hide-title { opacity: 0 !important; }
+        .guide-container { margin-bottom: 110px; text-align: center; opacity: 0.8; transition: opacity 0.3s; }
+        .guide-text { 
+            color: #ffcae5; font-size: 14px; font-weight: 300; font-style: italic; 
+            text-shadow: 0 0 5px rgba(255, 105, 180, 0.5);
+        }
+        .highlight { color: #ffffff; font-weight: 600; text-decoration: underline decoration-pink; }
+
+        #webcam-wrapper {
+            position: absolute; bottom: 20px; left: 20px; width: 120px; height: 90px;
+            border-radius: 8px; overflow: hidden; z-index: 50; background: #000;
+            border: 1px solid rgba(255, 158, 205, 0.3); opacity: 0.5; transition: opacity 0.3s;
+        }
+        #webcam-wrapper:hover { opacity: 1; }
+        #webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        
+        #status-bar {
+            position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(82, 37, 56, 0.8);
+            padding: 2px 0; color: #ffcae5; font-size: 10px; text-align: center; z-index: 60;
+        }
+        #loading-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #1a0510; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1s ease;
+        }
+        .loader-text { color: #ff9ecd; font-family: 'Great Vibes', cursive; margin-top: 20px; font-size: 30px; }
+        .spinner {
+            width: 30px; height: 30px; border: 2px solid rgba(255, 158, 205, 0.2); 
+            border-radius: 50%; border-top-color: #ff9ecd; animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
-    <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "@mediapipe/tasks-vision": "https://unpkg.com/@mediapipe/tasks-vision@0.10.3/+esm"
+            }
+        }
+    </script>
 </head>
 <body>
-    <img id="background-image" src="./back.png" alt="Background">
-    <div id="dark-overlay"></div>
-    <div id="canvas-container"></div>
+    <div id="loading-screen"><div class="spinner"></div><div class="loader-text">Loading...</div></div>
+    <div id="background-layer"></div><div id="noise-overlay"></div><div id="canvas-container"></div>
+    <canvas id="visualizer-canvas"></canvas>
     <div id="ui-layer">
-        <h1 id="main-title">Merry Xmas</h1>
-        <div id="mode-indicator">INTERACTIVE JAR</div>
+        <h1 id="main-title">MAGIC PARTICLES</h1>
+        <div class="guide-container"><span class="guide-text" id="guide-text">Đang chuẩn bị...</span></div>
     </div>
-    <div id="lyrics-container"><span id="lyrics-text">...</span></div>
-    <div id="webcam-wrapper">
-        <div id="cam-overlay">
-            <div class="rec-dot"></div>
-            <div class="rec-text">LIVE</div>
-        </div>
-        <div id="cam-stats">Initializing...</div>
-        <canvas id="webcam-canvas"></canvas>
-    </div>
-    <video id="input_video" style="display:none"></video>
-    <audio id="bg-music" src="./audio.mp3" loop></audio>
+    <div id="webcam-wrapper"><video id="webcam" autoplay playsinline muted></video><div id="status-bar">Init...</div></div>
+    
+    <audio id="audio-bg" src="./audio.mp3" loop preload="metadata"></audio>
+    <audio id="audio-letter" src="./audio2.mp3" loop preload="metadata"></audio>
 
     <script type="module">
         import * as THREE from 'three';
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+        import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 
-        const TOTAL_PHOTOS = 20; 
-        const LYRICS_DATA = [
-            {time:0.00,text:"Last Christmas, I gave you my heart"},
-            {time:4.00,text:"But the very next day, you gave it away"},
-            {time:7.13,text:"Last Christmas, I gave you my heart"},
-            {time:11.08,text:"But the very next day, you gave it away"},
-            {time:15.08,text:"This year, to save me from tears"},
-            {time:18.99,text:"I'll give it to someone special"},
-            {time:23.12,text:"Last Christmas, I gave you my heart"},
-            {time:27.02,text:"But the very next day, you gave it away"},
-            {time:31.06,text:"This year, to save me from tears"},
-            {time:34.97,text:"I'll give it to someone special"},
-            {time:39.11,text:"Once bitten and twice shy"},
-            {time:43.08,text:"I keep my distance, but you still catch my eye"},
-            {time:46.99,text:"Tell me, baby, do you recognize me?"},
-            {time:51.02,text:"Well, it's been a year, it doesn't surprise me"},
-            {time:55.08,text:"I wrapped it up and sent it"},
-            {time:58.99,text:"With a note saying, 'I love you,' I meant it"},
-            {time:63.02,text:"Now I know what a fool I've been"},
-            {time:66.94,text:"But if you kissed me now, I know you'd fool me again"},
-            {time:71.02,text:"Last Christmas, I gave you my heart"},
-            {time:74.97,text:"But the very next day, you gave it away"},
-            {time:78.98,text:"This year, to save me from tears"},
-            {time:82.95,text:"I'll give it to someone special"},
-            {time:87.00,text:"Last Christmas, I gave you my heart"},
-            {time:90.93,text:"But the very next day, you gave it away"},
-            {time:94.96,text:"This year, to save me from tears"},
-            {time:98.93,text:"I'll give it to someone special"},
-            {time:103.10,text:"A crowded room, friends with tired eyes"},
-            {time:107.01,text:"I'm hiding from you and your soul of ice"},
-            {time:111.03,text:"My God, I thought you were someone to rely on"},
-            {time:114.98,text:"Me? I guess I was a shoulder to cry on"},
-            {time:119.04,text:"A face on a lover with a fire in his heart"},
-            {time:123.02,text:"A man undercover, but you tore me apart"},
-            {time:127.03,text:"Ooh, ooh"},
-            {time:128.97,text:"Now I've found a real love, you'll never fool me again"},
-            {time:133.06,text:"Last Christmas, I gave you my heart"},
-            {time:136.99,text:"But the very next day, you gave it away"},
-            {time:141.00,text:"This year, to save me from tears"},
-            {time:144.97,text:"I'll give it to someone special"},
-            {time:150.29,text:"A face on a lover with a fire in his heart"},
-            {time:154.02,text:"(Gave you my heart)"},
-            {time:155.03,text:"A man undercover, but you tore me apart"},
-            {time:158.98,text:"Next year"},
-            {time:160.00,text:"I'll give it to someone, I'll give it to someone special"},
-            {time:163.99,text:"special"},
-            {time:165.00,text:"Someone"},
-            {time:167.00,text:"Someone"},
-            {time:169.00,text:"Someone"},
-            {time:171.00,text:"Someone"},
-            {time:173.00,text:"Someone"},
-            {time:175.00,text:"Someone"},
-            {time:177.00,text:"Someone"},
-            {time:179.00,text:"Someone"},
-            {time:181.00,text:"Someone"}
-        ];
-        
-        const SCENE_CONFIG = { 
-            scaleFar: 10.00, 
-            posFar: { x: 0.0, y: -0.6 }, 
-            camZFar: 7.7, 
-            scaleNear: 10.00, 
-            posNear: { x: 0.0, y: -0.7 }, 
-            camZNear: 2.5, 
-            zoomSpeed: 0.1, 
-            rotateSpeed: 0.08 
+        // ========== TỐI ƯU CẤU HÌNH ==========
+        const CONFIG = {
+            maxCount: 8000,      // GIẢM từ 20000 xuống 8000 - cải thiện FPS đáng kể
+            particleSize: 0.08,   
+            spread: 100,
+            fadeSpeed: 2.0, 
+            slideSpeed: 15.0, 
+            slideGap: 40,     
+            smoothFactor: 0.12, 
+            gestureThreshold: 8,  // GIẢM để nhạy hơn
+            heartThreshold: 0.15,
+            sparkleCount: 80      // GIẢM từ 150 xuống 80
         };
+
+        const IMG_FOX = './target.png'; 
+        const IMG_PEN = './target2.png'; 
+        const IMG_LETTER = './mess.png'; 
+        const IMG_PHOTO_SINGLE = './photo.png';
+        const SLIDE_IMAGES = ['./image/1.png', './image/2.png', './image/3.png', './image/4.png', './image/5.png', './image/6.png'];
+
+        // ========== BIẾN TỐI ƯU ==========
+        let scene, camera, renderer, composer, clock, bloomPass;
+        let mainGroup, instancedMesh, messageMesh, singlePhotoMesh, slideshowGroup; 
+        let glitterSystem, starSystem, whiteStarSystem, sparkleSystem; 
+        let sparkleIndices = []; 
+        let auraRingSystem; 
+        const AURA_COUNT = 150; // GIẢM từ 300 xuống 150
+
+        let audioContext, audioAnalyser, audioSource, audioDataArray;
+        let isAudioSetup = false;
+        let visualizerCanvas, visualizerCtx;
+
+        let slides = []; 
+        let totalSlideWidth = 0; 
+        let pCurrent, pTarget, pScatter; 
+        let count = 0;
+        let dummy = new THREE.Object3D();
+        const _tempColor = new THREE.Color(); 
+        const _targetColor = new THREE.Color(0xff69b4);
+        const _zeroVec = new THREE.Vector3(0, 0, 0);
+
+        let handLandmarker, video; 
+        let isFoxLoaded = false, isPenLoaded = false;
+        let appState = 'FOX'; 
+        let interactionLock = 0; 
+        let lastActionTime = 0; 
+        let isLoadingDelay = false; 
+        let loadingDelayTime = 0;
+        let handParallax = { x: 0, y: 0 }; 
+        let smoothedParallax = { x: 0, y: 0 }; 
+        let imagesData = { 
+            1: { data: null, width: 0, height: 0 }, 
+            2: { data: null, width: 0, height: 0 } 
+        };
+        let currentBloomStrength = 0; 
+        let currentOpacity = 1.0;
+        let animLetter = { scale: 0, y: -50, pScale: 1, pY: 0 };
+        let animSlide = { opacity: 0 }; 
+        let animSinglePhoto = { opacity: 0, scale: 0 };
+        let gestureBuffer = { pinch: 0, open: 0, heart: 0, fist: 0 };
+        let lastVideoTime = -1;
         
-        const LAYERS = [
-            { id: 'inner_snow', shape: 'Snowflake', count: 400, opacity: 0.9, color: '#ffffff', speed: 0.0005, size: 0.06, radius: 0.48, startY: 1.1, endY: -0.3, drift: 0.01, twinkle: false, rotateWithJar: true },
-            { id: 'snow_main', shape: 'Snowflake', count: 150, opacity: 0.9, color: '#e0ffff', speed: 0.0010, size: 0.18, radius: 5.0, startY: 7.0, endY: -6.0, drift: 0.05, twinkle: true, rotateWithJar: true },
-            { id: 'gold_dust', shape: 'Circle', count: 120, opacity: 0.8, color: '#ffcc00', speed: 0.0006, size: 0.03, radius: 4.5, startY: 6.0, endY: -4.0, drift: 0.08, twinkle: true, rotateWithJar: true }
-        ];
+        // ========== TỐI ƯU ANIMATION ==========
+        let frameCount = 0;
+        let lastFpsTime = 0;
+        let currentFps = 60;
+        const TARGET_FPS = 60;
+        const FRAME_TIME = 1000 / TARGET_FPS;
+        let lastFrameTime = performance.now();
+        let isAnimating = false;
 
-        let scene, camera, renderer, carModel, mixer, particleSystems = {}, textureCache = {}, polaroidTextures = [], polaroidGroup, clock = new THREE.Clock(), bgParticleGroup;
-        let isGalleryMode = false, lastGesture = 'NONE', isZoomedIn = false, lastSwitchTime = 0, lastDropTime = 0, jarOffsetY = 0, inspectedPhoto = null;
-        const SWITCH_COOLDOWN = 1.5;
-        const STATE = { hand: { detected: false, x: 0.5, y: 0.5, gesture: 'NONE' }, rotation: { currentY: 0, currentX: 0 } };
+        // ========== LOADING TỐI ƯU ==========
+        let loadingAssets = 0;
+        let totalAssets = 0;
 
-        function init() {
-            // Tự động phát nhạc khi trang tải
-            const audio = document.getElementById('bg-music');
-            audio.play().catch(e => {
-                console.log("Cần tương tác người dùng để phát nhạc, sẽ thử lại sau");
-                // Thêm sự kiện click để bắt đầu phát nhạc
-                document.body.addEventListener('click', () => {
-                    audio.play().catch(e => console.log(e));
-                }, { once: true });
-            });
+        // ========== KHỞI TẠO NHANH ==========
+        async function init() {
+            console.time('Total Init Time');
+            
+            // Hiển thị UI ngay lập tức
+            updateStatus("Starting...");
+            
+            // Khởi tạo Three.js trước (không chờ)
+            initThree();
+            
+            // Load assets song song
+            const loadPromises = [];
+            
+            // Load ảnh trước
+            loadPromises.push(loadImage(IMG_FOX, 1));
+            loadPromises.push(loadImage(IMG_PEN, 2));
+            
+            // Setup basic scene
+            setupPostProcessing();
+            setupMessageMesh(); 
+            setupSinglePhoto(); 
+            setupSlideshow(); 
+            
+            // Giảm độ phức tạp particle system
+            initInstancedMesh(CONFIG.maxCount); 
+            setupSparkles(); 
+            setupGlitter(); 
+            setupFloatingStars(); 
+            setupWhiteStars();
+            setupAuraRing();
+            
+            // Khởi tạo visualizer
+            initVisualizer2D();
+            
+            // Load MediaPipe sau
+            Promise.all(loadPromises)
+                .then(() => {
+                    useImageData(1);
+                    updateStatus("Loading AI...");
+                    
+                    // Bắt đầu animation loop ngay
+                    isAnimating = true;
+                    animate();
+                    
+                    // Load MediaPipe trong background
+                    initMediaPipe().then(() => {
+                        hideLoading();
+                        setupEvents();
+                        updateStatus("Ready!");
+                    });
+                })
+                .catch(err => {
+                    console.error("Error loading assets", err);
+                    updateStatus("Error - Please refresh");
+                    hideLoading();
+                });
 
+            console.timeEnd('Total Init Time');
+        }
+
+        function hideLoading() {
+            const el = document.getElementById('loading-screen');
+            if(el) {
+                el.style.opacity = '0';
+                setTimeout(() => {
+                    if (el.parentNode) el.parentNode.removeChild(el);
+                }, 500);
+            }
+        }
+
+        // ========== THREE.JS TỐI ƯU ==========
+        function initThree() {
             const container = document.getElementById('canvas-container');
             scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 0, SCENE_CONFIG.camZFar);
             
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            // Tắt fog để tăng performance
+            // scene.fog = new THREE.FogExp2(0x5e2240, 0.002);
+            
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 1000);
+            camera.position.z = 70;
+            
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: false,
+                powerPreference: "high-performance",
+                alpha: true,
+                precision: 'mediump' // Giảm precision để tăng performance
+            });
+            
+            // Tối ưu renderer
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setPixelRatio(1); // Cố định pixel ratio để tăng FPS
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.2;
+            renderer.toneMappingExposure = 1.0;
+            
             container.appendChild(renderer.domElement);
-
-            const pmremGenerator = new THREE.PMREMGenerator(renderer);
-            scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
-            
-            const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-            dirLight.position.set(5, 10, 7);
-            scene.add(dirLight);
-            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
-            loadTextures(); 
-            setupBackgroundParticles(); 
-            loadPolaroidTextures(); 
-            LAYERS.forEach(createLayerSystem); 
-            createPolaroids();
-
-            new GLTFLoader().load('./car.glb', (gltf) => {
-                carModel = gltf.scene;
-                carModel.scale.setScalar(SCENE_CONFIG.scaleFar);
-                carModel.position.set(SCENE_CONFIG.posFar.x, SCENE_CONFIG.posFar.y, 0);
-                carModel.position.z = -0.5;
-                carModel.rotation.set(0,0,0);
-                if (gltf.animations.length) { 
-                    mixer = new THREE.AnimationMixer(carModel); 
-                    mixer.clipAction(gltf.animations[0]).play(); 
-                }
-                scene.add(carModel);
-            });
-
-            initHandTracking();
-            window.addEventListener('resize', () => { 
-                camera.aspect = window.innerWidth / window.innerHeight; 
-                camera.updateProjectionMatrix(); 
-                renderer.setSize(window.innerWidth, window.innerHeight); 
-            });
-            animate();
+            clock = new THREE.Clock();
         }
 
-        function loadPolaroidTextures() {
-            const imgLoader = new THREE.ImageLoader();
-            imgLoader.crossOrigin = 'anonymous'; 
-            const cacheBuster = Date.now();
-            for (let i = 1; i <= TOTAL_PHOTOS; i++) {
-                const canvas = document.createElement('canvas'); 
-                canvas.width = 256; 
-                canvas.height = 300; 
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#fdfdfd'; 
-                ctx.fillRect(0, 0, 256, 300); 
-                ctx.fillStyle = '#eee'; 
-                ctx.fillRect(15, 15, 226, 226);
-                ctx.fillStyle = '#333'; 
-                ctx.font = '16px Arial'; 
-                ctx.textAlign = 'center'; 
-                ctx.fillText('Loading...', 128, 130);
-                
-                const texture = new THREE.CanvasTexture(canvas); 
-                texture.colorSpace = THREE.SRGBColorSpace; 
-                polaroidTextures.push(texture);
-                
-                const path = `./images/${i}.png?v=${cacheBuster}`;
-                imgLoader.load(path, 
-                    (image) => {
-                        ctx.fillStyle = '#fdfdfd'; 
-                        ctx.fillRect(0, 0, 256, 300); 
-                        ctx.drawImage(image, 15, 15, 226, 226);
-                        ctx.fillStyle = '#333'; 
-                        ctx.font = '22px Montserrat'; 
-                        ctx.textAlign = 'center'; 
-                        ctx.fillText(`Moment ${i}`, 128, 275);
-                        texture.needsUpdate = true;
-                    }, 
-                    undefined, 
-                    () => {
-                        ctx.fillStyle = '#fdfdfd'; 
-                        ctx.fillRect(0, 0, 256, 300); 
-                        ctx.fillStyle = '#ffcccc'; 
-                        ctx.fillRect(15, 15, 226, 226);
-                        ctx.fillStyle = '#cc0000'; 
-                        ctx.font = 'bold 20px Arial'; 
-                        ctx.textAlign = 'center'; 
-                        ctx.fillText('NO IMAGE', 128, 120);
-                        ctx.font = '14px Arial'; 
-                        ctx.fillText(`${i}.png`, 128, 150); 
-                        texture.needsUpdate = true;
-                    }
-                );
-            }
+        function setupPostProcessing() {
+            const renderScene = new RenderPass(scene, camera);
+            
+            // Tối ưu bloom pass
+            bloomPass = new UnrealBloomPass(
+                new THREE.Vector2(window.innerWidth/8, window.innerHeight/8), // Giảm resolution
+                1.5, 0.8, 0.8
+            );
+            bloomPass.threshold = 0; 
+            bloomPass.strength = 0; 
+            bloomPass.radius = 0.5;
+            
+            composer = new EffectComposer(renderer); 
+            composer.addPass(renderScene); 
+            composer.addPass(bloomPass);
         }
 
-        function updateLyrics() {
-            const audio = document.getElementById('bg-music'); 
-            const lyricBox = document.getElementById('lyrics-text');
-            if(!audio || audio.paused || LYRICS_DATA.length === 0) return;
-            
-            const t = audio.currentTime; 
-            let currentLine = "";
-            for(let i = 0; i < LYRICS_DATA.length; i++) { 
-                if (t >= LYRICS_DATA[i].time) { 
-                    if (i === LYRICS_DATA.length - 1 || t < LYRICS_DATA[i+1].time) { 
-                        currentLine = LYRICS_DATA[i].text; 
-                        break; 
-                    } 
-                } 
-            }
-            if (lyricBox.innerText !== currentLine) lyricBox.innerText = currentLine;
-        }
-
-        function loadTextures() {
-            const textureLoader = new THREE.TextureLoader(); 
-            textureCache['Snowflake'] = textureLoader.load('./snow.png'); 
-            
-            const cvs = document.createElement('canvas'); 
-            cvs.width = 64; 
-            cvs.height = 64; 
-            const ctx = cvs.getContext('2d'); 
-            
-            const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 30); 
-            g.addColorStop(0, 'rgba(255,255,255,1)'); 
-            g.addColorStop(0.4, 'rgba(255,255,255,0.5)'); 
-            g.addColorStop(1, 'rgba(255,255,255,0)'); 
-            
-            ctx.fillStyle = g; 
-            ctx.fillRect(0, 0, 64, 64); 
-            textureCache['Circle'] = new THREE.CanvasTexture(cvs);
-        }
-
-        function setupBackgroundParticles() {
-            bgParticleGroup = new THREE.Group(); 
-            bgParticleGroup.position.z = -15; 
-            scene.add(bgParticleGroup);
-            
-            const count = 300; 
-            const geometry = new THREE.BufferGeometry(); 
-            const positions = new Float32Array(count * 3);
-            
-            for(let i = 0; i < count; i++){ 
-                positions[i * 3] = (Math.random() - 0.5) * 100; 
-                positions[i * 3 + 1] = (Math.random() - 0.5) * 80; 
-                positions[i * 3 + 2] = (Math.random() - 0.5) * 50; 
-            }
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            
-            const material = new THREE.PointsMaterial({
+        // ========== PARTICLE SYSTEM TỐI ƯU ==========
+        function initInstancedMesh(cnt) {
+            // Sử dụng geometry đơn giản hơn
+            const geo = new THREE.SphereGeometry(CONFIG.particleSize, 4, 4); // Thay vì Icosahedron
+            const mat = new THREE.MeshBasicMaterial({ 
                 color: 0xffffff, 
-                size: 0.6, 
                 transparent: true, 
-                opacity: 0.6, 
-                map: textureCache['Circle'], 
+                opacity: 1, 
+                depthWrite: false 
+            });
+            
+            instancedMesh = new THREE.InstancedMesh(geo, mat, cnt);
+            instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            
+            // Pre-allocate arrays
+            pCurrent = new Float32Array(cnt * 3);
+            pTarget = new Float32Array(cnt * 3);
+            pScatter = new Float32Array(cnt * 3);
+            
+            mainGroup = new THREE.Group(); 
+            mainGroup.add(instancedMesh); 
+            scene.add(mainGroup);
+        }
+
+        function loadImage(url, id) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.decoding = 'async'; // Tối ưu decode ảnh
+                img.loading = 'eager';
+                
+                img.onload = () => {
+                    // Giảm kích thước ảnh xử lý
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                    
+                    // Giảm maxSize để xử lý nhanh hơn
+                    const maxSize = 200; // GIẢM từ 400 xuống 200
+                    const aspect = img.width / img.height;
+                    const h = Math.min(maxSize, img.height);
+                    const w = Math.floor(h * aspect);
+                    
+                    canvas.width = w;
+                    canvas.height = h;
+                    
+                    // Draw với chất lượng thấp hơn
+                    ctx.imageSmoothingEnabled = false;
+                    ctx.drawImage(img, 0, 0, w, h);
+                    
+                    // Chỉ lấy dữ liệu khi cần
+                    const imageData = ctx.getImageData(0, 0, w, h);
+                    imagesData[id].data = imageData.data;
+                    imagesData[id].width = w;
+                    imagesData[id].height = h;
+                    
+                    if(id === 1) isFoxLoaded = true;
+                    else isPenLoaded = true;
+                    
+                    resolve();
+                };
+                
+                img.onerror = () => {
+                    console.error(`Failed to load image: ${url}`);
+                    reject(new Error(`Failed to load image: ${url}`));
+                };
+                
+                img.src = url;
+            });
+        }
+
+        function useImageData(id) {
+            const data = imagesData[id].data;
+            const w = imagesData[id].width;
+            const h = imagesData[id].height;
+            
+            if(!data) return;
+            
+            // Tối ưu lấy valid indices
+            const validIndices = [];
+            const dataLength = data.length;
+            
+            // Tăng step để giảm số lượng particles
+            const step = 4;
+            for (let i = 0; i < dataLength; i += step * 4) {
+                if (data[i + 3] > 50) {
+                    validIndices.push(i);
+                }
+            }
+            
+            const activeCount = Math.min(CONFIG.maxCount, validIndices.length);
+            count = activeCount;
+            instancedMesh.count = count;
+            
+            const spread = 60;
+            const imgAspect = h / w;
+            
+            sparkleIndices = [];
+            const sparkleTotal = Math.min(CONFIG.sparkleCount, activeCount);
+            
+            // Pre-calculate random indices
+            for(let k = 0; k < sparkleTotal; k++) {
+                sparkleIndices.push(Math.floor(Math.random() * activeCount));
+            }
+            
+            const spColors = sparkleSystem.geometry.attributes.color.array;
+            
+            // Tối ưu vòng lặp
+            const validIndicesLength = validIndices.length;
+            for (let i = 0; i < activeCount; i++) {
+                const idxIndex = Math.floor((i * validIndicesLength) / activeCount);
+                const idx = validIndices[idxIndex];
+                const px = (idx/4) % w;
+                const py = Math.floor((idx/4) / w);
+                
+                const tx = (px / w - 0.5) * spread;
+                const ty = -(py / h - 0.5) * spread * imgAspect;
+                const tz = (Math.random() - 0.5) * 2;
+                
+                const i3 = i * 3;
+                pTarget[i3] = tx;
+                pTarget[i3 + 1] = ty;
+                pTarget[i3 + 2] = tz;
+                
+                const ang = Math.random() * Math.PI * 2;
+                const rad = spread * (1.5 + Math.random());
+                
+                pScatter[i3] = Math.cos(ang) * rad;
+                pScatter[i3 + 1] = Math.sin(ang) * rad;
+                pScatter[i3 + 2] = (Math.random() - 0.5) * 100;
+                
+                if (appState === 'FOX' && id === 1 && currentOpacity === 1.0) {
+                    pCurrent[i3] = tx;
+                    pCurrent[i3 + 1] = ty;
+                    pCurrent[i3 + 2] = tz;
+                }
+                
+                const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+                _tempColor.setRGB(r/255, g/255, b/255).lerp(_targetColor, 0.1);
+                instancedMesh.setColorAt(i, _tempColor);
+            }
+            
+            // Tối ưu sparkle colors
+            for(let k = 0; k < sparkleTotal; k++) {
+                const particleIndex = sparkleIndices[k];
+                const idxIndex = Math.floor((particleIndex * validIndicesLength) / activeCount);
+                const idx = validIndices[idxIndex];
+                const r = data[idx];
+                const g = data[idx + 1];
+                const b = data[idx + 2];
+                
+                const k3 = k * 3;
+                spColors[k3] = Math.min(1, (r/255) * 1.3 + 0.2);
+                spColors[k3 + 1] = Math.min(1, (g/255) * 1.3 + 0.2);
+                spColors[k3 + 2] = Math.min(1, (b/255) * 1.3 + 0.2);
+            }
+            
+            sparkleSystem.geometry.attributes.color.needsUpdate = true;
+            instancedMesh.instanceMatrix.needsUpdate = true;
+            instancedMesh.instanceColor.needsUpdate = true;
+        }
+
+        // ========== VISUAL EFFECTS TỐI ƯU ==========
+        function setupSparkles() {
+            const geom = new THREE.BufferGeometry();
+            const positions = new Float32Array(CONFIG.sparkleCount * 3);
+            const colors = new Float32Array(CONFIG.sparkleCount * 3);
+            
+            geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            
+            const tex = createCircleTexture();
+            const mat = new THREE.PointsMaterial({ 
+                size: 0.6,
+                transparent: true,
+                opacity: 1.0,
+                map: tex,
+                vertexColors: true,
+                blending: THREE.AdditiveBlending,
                 depthWrite: false
             });
             
-            bgParticleGroup.add(new THREE.Points(geometry, material));
+            sparkleSystem = new THREE.Points(geom, mat);
+            mainGroup.add(sparkleSystem);
         }
 
-        function updateBackgroundParticles(time, dt) {
-            if(!bgParticleGroup) return;
-            const breathScale = 1.0 + Math.sin(time * 0.5) * 0.05; 
-            bgParticleGroup.scale.setScalar(breathScale); 
-            bgParticleGroup.rotation.y = Math.sin(time * 0.1) * 0.1;
-        }
-
-        function createPolaroids() {
-            polaroidGroup = new THREE.Group(); 
-            const geometry = new THREE.PlaneGeometry(0.7, 0.9); 
+        function setupAuraRing() {
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(AURA_COUNT * 3);
+            const baseRadius = 45;
+            const ringThickness = 8;
             
-            const count = TOTAL_PHOTOS; 
-            const cols = 5; 
-            const radiusBase = 4.0; 
-            
-            for (let i = 0; i < count; i++) {
-                const material = new THREE.MeshBasicMaterial({ 
-                    map: polaroidTextures[i], 
-                    side: THREE.DoubleSide, 
-                    transparent: true, 
-                    opacity: 0 
-                });
-                
-                const polaroid = new THREE.Mesh(geometry, material);
-                const row = Math.floor(i / cols); 
-                const col = i % cols; 
-                const yBase = -1.5 + (row * 1.25); 
-                const angleStep = (Math.PI * 2 * 0.8) / cols; 
-                const angleOffset = (row % 2 === 0) ? 0 : (angleStep / 2); 
-                const theta = -2.5 + (col * angleStep) + angleOffset; 
-                
-                const x = radiusBase * Math.cos(theta); 
-                const z = radiusBase * Math.sin(theta); 
-                const targetRotY = Math.atan2(x, z) + Math.PI;
-                
-                polaroid.userData = { 
-                    targetPos: new THREE.Vector3(
-                        x + (Math.random() - 0.5) * 0.2, 
-                        yBase + (Math.random() - 0.5) * 0.3, 
-                        z + (Math.random() - 0.5) * 0.2
-                    ), 
-                    startPos: new THREE.Vector3(x * 5, yBase * 5, z * 5), 
-                    floatOffset: Math.random() * 100, 
-                    targetRot: { 
-                        y: targetRotY, 
-                        z: (Math.random() - 0.5) * 0.2 
-                    }, 
-                    originalIndex: i 
-                };
-                
-                polaroid.position.copy(polaroid.userData.startPos); 
-                polaroid.visible = false; 
-                polaroidGroup.add(polaroid);
-            }
-            scene.add(polaroidGroup);
-        }
-
-        function createLayerSystem(config) {
-            const geometry = new THREE.BufferGeometry(); 
-            const positions = [], velocities = [], offsets = [];
-            
-            for (let i = 0; i < config.count; i++) {
-                const r = config.radius * Math.sqrt(Math.random()); 
-                const theta = Math.random() * 2 * Math.PI;
-                positions.push(
-                    r * Math.cos(theta), 
-                    config.startY - Math.random() * (config.startY - config.endY), 
-                    r * Math.sin(theta)
-                );
-                velocities.push((Math.random() * 0.4) + 0.6); 
-                offsets.push(Math.random() * 100);
+            for (let i = 0; i < AURA_COUNT; i++) {
+                const theta = Math.random() * Math.PI * 2;
+                const r = baseRadius + (Math.random() - 0.5) * ringThickness;
+                const i3 = i * 3;
+                positions[i3] = r * Math.cos(theta);
+                positions[i3 + 1] = r * Math.sin(theta) * 0.7;
+                positions[i3 + 2] = (Math.random() - 0.5) * 20;
             }
             
-            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3)); 
-            geometry.setAttribute('velocity', new THREE.Float32BufferAttribute(velocities, 1)); 
-            geometry.setAttribute('offset', new THREE.Float32BufferAttribute(offsets, 1));
-            
-            const material = new THREE.PointsMaterial({ 
-                size: config.size, 
-                color: new THREE.Color(config.color), 
-                map: textureCache[config.shape], 
-                transparent: true, 
-                opacity: config.opacity, 
-                blending: THREE.NormalBlending, 
-                depthWrite: false, 
-                sizeAttenuation: true 
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const tex = createCircleTexture();
+            const material = new THREE.PointsMaterial({
+                color: 0xffaadd,
+                size: 0.8,
+                map: tex,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
             });
             
-            const system = new THREE.Points(geometry, material); 
-            system.userData = { config: config }; 
-            particleSystems[config.id] = system; 
-            scene.add(system);
+            auraRingSystem = new THREE.Points(geometry, material);
+            scene.add(auraRingSystem);
         }
 
-        function toggleMode() {
-            const now = clock.getElapsedTime(); 
-            if (now - lastSwitchTime < SWITCH_COOLDOWN) return; 
+        function createCircleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 16; // GIẢM từ 32 xuống 16
+            canvas.height = 16;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
             
-            lastSwitchTime = now; 
-            isGalleryMode = !isGalleryMode; 
-            const indicator = document.getElementById('mode-indicator');
+            grad.addColorStop(0, 'rgba(255,255,255,1)');
+            grad.addColorStop(0.4, 'rgba(255,255,255,0.8)');
+            grad.addColorStop(1, 'rgba(255,255,255,0)');
             
-            if (isGalleryMode) {
-                indicator.innerText = "MODE: PHOTO GALLERY"; 
-                indicator.style.color = "#00ffff";
-                
-                gsap.to(window, { 
-                    duration: 1.2, 
-                    jarOffsetY: -8, 
-                    ease: "power2.inOut" 
-                }); 
-                
-                polaroidGroup.rotation.set(0, 0, 0);
-                polaroidGroup.children.forEach((polaroid, index) => {
-                    polaroid.visible = true; 
-                    polaroid.position.copy(polaroid.userData.startPos); 
-                    polaroid.material.opacity = 0;
-                    
-                    const t = polaroid.userData.targetPos; 
-                    const r = polaroid.userData.targetRot;
-                    
-                    gsap.to(polaroid.position, { 
-                        x: t.x, y: t.y, z: t.z, 
-                        duration: 1.2, 
-                        ease: "power3.out", 
-                        delay: index * 0.03 
-                    });
-                    
-                    gsap.to(polaroid.rotation, { 
-                        x: 0, y: r.y, z: r.z, 
-                        duration: 1.2, 
-                        ease: "power3.out", 
-                        delay: index * 0.03 
-                    });
-                    
-                    gsap.to(polaroid.material, { 
-                        opacity: 1, 
-                        duration: 0.8, 
-                        delay: index * 0.03 
-                    });
-                });
-            } else {
-                indicator.innerText = "MODE: JAR CONTROL"; 
-                indicator.style.color = "#ffffff";
-                
-                gsap.to(window, { 
-                    duration: 1.2, 
-                    jarOffsetY: 0, 
-                    ease: "back.out(0.8)", 
-                    delay: 0.2 
-                }); 
-                
-                polaroidGroup.children.forEach((polaroid, index) => {
-                    const s = polaroid.userData.startPos;
-                    gsap.to(polaroid.position, { 
-                        x: s.x, y: s.y, z: s.z, 
-                        duration: 1.0, 
-                        ease: "power2.in", 
-                        delay: index * 0.02 
-                    });
-                    
-                    gsap.to(polaroid.material, { 
-                        opacity: 0, 
-                        duration: 0.8, 
-                        delay: index * 0.02 
-                    });
-                });
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 16, 16);
+            
+            const tex = new THREE.CanvasTexture(canvas);
+            return tex;
+        }
+
+        function setupFloatingStars() {
+            const starCount = 60; // GIẢM từ 100 xuống 60
+            const geom = new THREE.BufferGeometry();
+            const pos = new Float32Array(starCount * 3);
+            const spd = new Float32Array(starCount);
+            
+            for(let i = 0; i < starCount; i++) {
+                const i3 = i * 3;
+                pos[i3] = (Math.random() - 0.5) * 200; // GIẢM range
+                pos[i3 + 1] = (Math.random() - 0.5) * 150;
+                pos[i3 + 2] = (Math.random() - 0.5) * 80 - 50;
+                spd[i] = 0.2 + Math.random() * 0.5;
             }
-        }
-
-        function updateParticles(time) {
-            Object.values(particleSystems).forEach(sys => {
-                const cfg = sys.userData.config;
-                
-                if (cfg.id === 'inner_snow') { 
-                    const alpha = 1.0 - Math.abs(jarOffsetY / 5.0); 
-                    sys.material.opacity = Math.max(0, cfg.opacity * alpha); 
-                    sys.position.y = jarOffsetY; 
-                }
-                
-                const positions = sys.geometry.attributes.position.array; 
-                const velocities = sys.geometry.attributes.velocity.array; 
-                const offsets = sys.geometry.attributes.offset.array;
-                
-                for(let i = 0; i < positions.length / 3; i++) {
-                    let ix = i * 3, iy = i * 3 + 1, iz = i * 3 + 2; 
-                    positions[iy] -= velocities[i] * cfg.speed * 10; 
-                    
-                    if (cfg.drift) { 
-                        positions[ix] += Math.cos(time * 0.5 + offsets[i]) * cfg.drift * 0.1; 
-                        positions[iz] += Math.sin(time * 0.3 + offsets[i]) * cfg.drift * 0.1; 
-                    }
-                    
-                    if(positions[iy] < cfg.endY) { 
-                        positions[iy] = cfg.startY; 
-                        const r = cfg.radius * Math.sqrt(Math.random()); 
-                        const t = Math.random() * 2 * Math.PI; 
-                        positions[ix] = r * Math.cos(t); 
-                        positions[iz] = r * Math.sin(t); 
-                    }
-                    
-                    if (cfg.id === 'inner_snow') { 
-                        const d = Math.sqrt(positions[ix] * positions[ix] + positions[iz] * positions[iz]); 
-                        if (d > cfg.radius) { 
-                            const ratio = (cfg.radius - 0.02) / d; 
-                            positions[ix] *= ratio; 
-                            positions[iz] *= ratio; 
-                        } 
-                    }
-                }
-                sys.geometry.attributes.position.needsUpdate = true;
-                
-                if(carModel && cfg.rotateWithJar && inspectedPhoto === null) { 
-                    sys.rotation.y = carModel.rotation.y; 
-                    sys.rotation.x = carModel.rotation.x; 
-                }
-            });
-        }
-
-        function updatePolaroids(time) {
-            if(!polaroidGroup) return;
             
-            polaroidGroup.children.forEach((p, i) => {
-                if(p === inspectedPhoto) return; 
-                
-                if (isGalleryMode && p.material.opacity > 0.5) {
-                    const off = p.userData.floatOffset; 
-                    p.position.y = p.userData.targetPos.y + Math.sin(time * 0.8 + off) * 0.15; 
-                    p.rotation.z = p.userData.targetRot.z + Math.sin(time * 0.7 + off) * 0.08;
-                }
+            geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            geom.setAttribute('speed', new THREE.BufferAttribute(spd, 1));
+            
+            const mat = new THREE.PointsMaterial({
+                color: 0xffccdd,
+                size: 0.8, // GIẢM size
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                map: createCircleTexture()
             });
             
-            if (isGalleryMode && inspectedPhoto === null) { 
-                polaroidGroup.rotation.y = carModel.rotation.y; 
-                polaroidGroup.rotation.x = carModel.rotation.x; 
+            starSystem = new THREE.Points(geom, mat);
+            scene.add(starSystem);
+        }
+
+        function setupWhiteStars() {
+            const count = 100; // GIẢM từ 150 xuống 100
+            const geom = new THREE.BufferGeometry();
+            const pos = new Float32Array(count * 3);
+            const spd = new Float32Array(count);
+            
+            for(let i = 0; i < count; i++) {
+                const i3 = i * 3;
+                pos[i3] = (Math.random() - 0.5) * 250; // GIẢM range
+                pos[i3 + 1] = (Math.random() - 0.5) * 200;
+                pos[i3 + 2] = (Math.random() - 0.5) * 120 - 20;
+                spd[i] = 0.1 + Math.random() * 0.3;
             }
-        }
-
-        function getClosestPolaroid() {
-            if(!polaroidGroup) return null; 
-            let closest = null; 
-            let minDistance = Infinity;
             
-            polaroidGroup.children.forEach(p => {
-                const worldPos = new THREE.Vector3(); 
-                p.getWorldPosition(worldPos); 
-                const distance = worldPos.distanceTo(camera.position);
-                
-                if (distance < minDistance && distance < 6.0) { 
-                    minDistance = distance; 
-                    closest = p; 
-                }
-            }); 
-            return closest;
-        }
-
-        function animatePhotoPopup(show) {
-            const now = clock.getElapsedTime();
+            geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            geom.setAttribute('speed', new THREE.BufferAttribute(spd, 1));
             
-            if (show) {
-                if (inspectedPhoto || now - lastDropTime < 0.8) return; 
-                inspectedPhoto = getClosestPolaroid(); 
-                if (!inspectedPhoto) return;
-                
-                scene.attach(inspectedPhoto); 
-                inspectedPhoto.visible = true; 
-                inspectedPhoto.material.opacity = 1;
-                
-                gsap.to(inspectedPhoto.position, { 
-                    x: 0, y: 0, z: camera.position.z - 2.5, 
-                    duration: 0.8, 
-                    ease: "back.out(1.2)" 
-                });
-                
-                gsap.to(inspectedPhoto.rotation, { 
-                    x: 0, y: 0, z: 0, 
-                    duration: 0.8 
-                }); 
-                
-                gsap.to(inspectedPhoto.scale, { 
-                    x: 1.4, y: 1.4, z: 1.4, 
-                    duration: 0.8 
-                }); 
-            } else {
-                if (!inspectedPhoto) return; 
-                const p = inspectedPhoto; 
-                inspectedPhoto = null; 
-                lastDropTime = now; 
-                
-                polaroidGroup.attach(p); 
-                const t = isGalleryMode ? p.userData.targetPos : p.userData.startPos; 
-                const r = p.userData.targetRot;
-                
-                gsap.to(p.position, { 
-                    x: t.x, y: t.y, z: t.z, 
-                    duration: 0.8, 
-                    ease: "back.out(1.0)" 
-                }); 
-                
-                gsap.to(p.scale, { 
-                    x: 1, y: 1, z: 1, 
-                    duration: 0.7 
-                });
-                
-                if (isGalleryMode) {
-                    gsap.to(p.rotation, { 
-                        x: 0, y: r.y, z: r.z, 
-                        duration: 0.7, 
-                        ease: "power2.out" 
-                    }); 
-                } else {
-                    gsap.to(p.material, { 
-                        opacity: 0, 
-                        duration: 0.5 
-                    });
-                }
-            }
-        }
-
-        function initHandTracking() {
-            const video = document.getElementById('input_video'); 
-            const canvas = document.getElementById('webcam-canvas'); 
-            const ctx = canvas.getContext('2d'); 
-            const stats = document.getElementById('cam-stats');
-            
-            const hands = new Hands({
-                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+            const mat = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.4, // GIẢM size
+                transparent: true,
+                opacity: 0.5,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                map: createCircleTexture()
             });
             
-            hands.setOptions({
-                maxNumHands: 1, 
-                modelComplexity: 1, 
-                minDetectionConfidence: 0.55, 
-                minTrackingConfidence: 0.55
-            }); 
-            
-            hands.onResults(results => {
-                canvas.width = video.videoWidth; 
-                canvas.height = video.videoHeight;
-                ctx.save(); 
-                ctx.clearRect(0, 0, canvas.width, canvas.height); 
-                ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-                
-                STATE.hand.gesture = 'NONE';
-                
-                if (results.multiHandLandmarks.length > 0) {
-                    STATE.hand.detected = true; 
-                    const lm = results.multiHandLandmarks[0]; 
-                    STATE.hand.x = 1 - lm[0].x; 
-                    STATE.hand.y = lm[0].y; 
-                    
-                    const tips = [8, 12, 16, 20]; 
-                    const pips = [6, 10, 14, 18]; 
-                    let extended = [];
-                    
-                    for(let i = 0; i < 4; i++) {
-                        extended.push(
-                            Math.hypot(lm[tips[i]].x - lm[0].x, lm[tips[i]].y - lm[0].y) > 
-                            Math.hypot(lm[pips[i]].x - lm[0].x, lm[pips[i]].y - lm[0].y)
-                        );
-                    }
-                    
-                    const pinchDist = Math.hypot(lm[4].x - lm[8].x, lm[4].y - lm[8].y);
-                    
-                    if (extended[0] && extended[1] && !extended[2] && !extended[3]) {
-                        STATE.hand.gesture = 'VICTORY';
-                    } else if (pinchDist < 0.05) {
-                        STATE.hand.gesture = 'PINCH';
-                    } else {
-                        STATE.hand.gesture = 'OPEN';
-                    }
-                    
-                    const g = STATE.hand.gesture;
-                    if (g === 'VICTORY') { 
-                        stats.innerText = "✌️ TOGGLE MODE"; 
-                        stats.style.color = '#ffff00'; 
-                    } else if (g === 'PINCH') { 
-                        stats.innerText = isGalleryMode ? "👌 LOCKED" : "🤏 ZOOM IN"; 
-                        stats.style.color = '#00ff00'; 
-                    } else if (g === 'OPEN') { 
-                        stats.innerText = isGalleryMode ? "🖐️ RELEASE" : "🖐️ ZOOM OUT"; 
-                        stats.style.color = '#00ffff'; 
-                    } else { 
-                        stats.innerText = "TRACKING..."; 
-                        stats.style.color = '#fff'; 
-                    } 
-                } else { 
-                    if(STATE.hand.detected) { 
-                        STATE.hand.detected = false; 
-                        STATE.hand.gesture = 'NONE'; 
-                    } 
-                    stats.innerText = "NO HAND"; 
-                    stats.style.color = '#888'; 
-                }
-                ctx.restore();
-            });
-            
-            const cameraUtils = new Camera(video, { 
-                onFrame: async () => { 
-                    await hands.send({image: video}); 
-                }, 
-                width: 320, 
-                height: 240 
-            }); 
-            cameraUtils.start();
+            whiteStarSystem = new THREE.Points(geom, mat);
+            scene.add(whiteStarSystem);
         }
 
-        function animate() {
-            requestAnimationFrame(animate); 
-            const dt = clock.getDelta(); 
-            const time = clock.getElapsedTime();
+        function setupGlitter() {
+            const c = 80; // GIẢM từ 150 xuống 80
+            const g = new THREE.BufferGeometry();
+            const p = new Float32Array(c * 3);
+            const s = new Float32Array(c);
             
-            if (mixer) mixer.update(dt);
-            
-            updateLyrics(); 
-            updateParticles(time); 
-            updatePolaroids(time); 
-            updateBackgroundParticles(time, dt);
-            
-            if (STATE.hand.gesture === 'VICTORY' && lastGesture !== 'VICTORY') {
-                toggleMode();
+            for(let i = 0; i < c; i++) {
+                const i3 = i * 3;
+                p[i3] = (Math.random() - 0.5) * 150; // GIẢM range
+                p[i3 + 1] = (Math.random() - 0.5) * 80;
+                p[i3 + 2] = (Math.random() - 0.5) * 40 + 20;
+                s[i] = 0.5 + Math.random() * 1.5;
             }
             
-            if (STATE.hand.gesture === 'PINCH') { 
-                isZoomedIn = true; 
-                if (isGalleryMode) animatePhotoPopup(true); 
-            }
+            g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+            g.setAttribute('speed', new THREE.BufferAttribute(s, 1));
             
-            if (STATE.hand.gesture === 'OPEN') { 
-                isZoomedIn = false; 
-                if (isGalleryMode) animatePhotoPopup(false); 
-            }
+            const m = new THREE.PointsMaterial({
+                color: 0xffb7c5,
+                size: 1.2, // GIẢM size
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                map: createCircleTexture()
+            });
             
-            lastGesture = STATE.hand.gesture;
+            glitterSystem = new THREE.Points(g, m);
+            scene.add(glitterSystem);
+        }
+
+        // ========== UI ELEMENTS TỐI ƯU ==========
+        function setupSlideshow() {
+            slideshowGroup = new THREE.Group();
+            slideshowGroup.position.z = 25;
+            scene.add(slideshowGroup);
             
-            if (STATE.hand.detected) {
-                const ty = (STATE.hand.x - 0.5) * (Math.PI * 6.0); 
-                const tx = (STATE.hand.y - 0.5) * (Math.PI * 1.0); 
-                
-                if (inspectedPhoto === null) {
-                    if (!isGalleryMode) { 
-                        STATE.rotation.currentY += (ty - STATE.rotation.currentY) * SCENE_CONFIG.rotateSpeed; 
-                        STATE.rotation.currentX += (tx - STATE.rotation.currentX) * SCENE_CONFIG.rotateSpeed; 
+            const textureLoader = new THREE.TextureLoader();
+            const photoSize = 22;
+            const cardWidth = 24;
+            const cardHeight = 28;
+            
+            totalSlideWidth = SLIDE_IMAGES.length * CONFIG.slideGap;
+            let startX = -(totalSlideWidth / 2) + (CONFIG.slideGap / 2);
+            
+            // Load ảnh slideshow với độ ưu tiên thấp hơn
+            setTimeout(() => {
+                SLIDE_IMAGES.forEach((path, index) => {
+                    textureLoader.load(path, (tex) => {
+                        // Tối ưu texture
+                        tex.generateMipmaps = false;
+                        tex.minFilter = THREE.LinearFilter;
                         
-                        if(carModel) { 
-                            carModel.rotation.y = STATE.rotation.currentY; 
-                            carModel.rotation.x = STATE.rotation.currentX; 
-                        } 
-                    } else if(carModel) { 
-                        carModel.rotation.y += (ty - carModel.rotation.y) * 0.08; 
-                        carModel.rotation.x += (tx - carModel.rotation.x) * 0.08; 
-                    }
-                }
-            } else if(carModel) { 
-                if(!isGalleryMode && inspectedPhoto === null) {
-                    carModel.rotation.y += 0.4 * dt; 
-                }
-                carModel.rotation.x *= 0.95; 
-            }
-            
-            if (!isGalleryMode) {
-                let targetScale, targetPosition, targetZoom;
-                if (isZoomedIn) { 
-                    targetScale = SCENE_CONFIG.scaleNear; 
-                    targetPosition = SCENE_CONFIG.posNear; 
-                    targetZoom = SCENE_CONFIG.camZNear; 
-                } else { 
-                    targetScale = SCENE_CONFIG.scaleFar; 
-                    targetPosition = SCENE_CONFIG.posFar; 
-                    targetZoom = SCENE_CONFIG.camZFar; 
-                }
-                
-                camera.position.z += (targetZoom - camera.position.z) * SCENE_CONFIG.zoomSpeed;
-                
-                if(carModel) { 
-                    carModel.scale.setScalar(
-                        carModel.scale.x + (targetScale - carModel.scale.x) * SCENE_CONFIG.zoomSpeed
-                    ); 
-                    carModel.position.x += (targetPosition.x - carModel.position.x) * SCENE_CONFIG.zoomSpeed; 
-                    carModel.position.y += (targetPosition.y - carModel.position.y) * SCENE_CONFIG.zoomSpeed; 
-                }
-            }
-            
-            if (carModel) { 
-                carModel.position.y += jarOffsetY; 
-                if(jarOffsetY < -2) {
-                    carModel.scale.setScalar(
-                        (isZoomedIn ? SCENE_CONFIG.scaleNear : SCENE_CONFIG.scaleFar) * 
-                        Math.max(0, 1 - (Math.abs(jarOffsetY)/10))
-                    ); 
-                }
-            }
-            
-            renderer.render(scene, camera);
+                        const cardGeo = new THREE.PlaneGeometry(cardWidth, cardHeight);
+                        const cardMat = new THREE.MeshBasicMaterial({
+                            color: 0xffffff,
+                            transparent: true,
+                            opacity: 0
+                        });
+                        const cardMesh = new THREE.Mesh(cardGeo, cardMat);
+                        
+                        const imgAspect = tex.image.width / tex.image.height;
+                        if (imgAspect > 1) {
+                            tex.repeat.set(1 / imgAspect, 1);
+                            tex.offset.x = (1 - (1/imgAspect)) / 2;
+                        } else {
+                            tex.repeat.set(1, imgAspect);
+                            tex.offset.y = (1 - imgAspect) / 2;
+                        }
+                        
+                        const photoGeo = new THREE.PlaneGeometry(photoSize, photoSize);
+                        const photoMat = new THREE.MeshBasicMaterial({
+                            map: tex,
+                            color: 0xffffff,
+                            transparent: true,
+                            opacity: 0,
+                            side: THREE.DoubleSide
+                        });
+                        const photoMesh = new THREE.Mesh(photoGeo, photoMat);
+                        
+                        photoMesh.position.z = 0.1;
+                        photoMesh.position.y = 1.5;
+                        
+                        const polaroid = new THREE.Group();
+                        polaroid.add(cardMesh);
+                        polaroid.add(photoMesh);
+                        polaroid.position.set(startX + (index * CONFIG.slideGap), 0, 0);
+                        polaroid.rotation.z = (Math.random() - 0.5) * 0.2;
+                        polaroid.userData = { materials: [cardMat, photoMat] };
+                        
+                        slides.push(polaroid);
+                        slideshowGroup.add(polaroid);
+                    });
+                });
+            }, 1000); // Delay để ưu tiên các phần khác
         }
 
-        // Khởi động ứng dụng
-        init();
+        function setupMessageMesh() {
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.load(IMG_LETTER, (tex) => {
+                tex.generateMipmaps = false;
+                tex.minFilter = THREE.LinearFilter;
+                
+                const aspect = tex.image.width / tex.image.height;
+                const h = 40;
+                const w = h * aspect;
+                
+                const geo = new THREE.PlaneGeometry(w, h);
+                const mat = new THREE.MeshBasicMaterial({
+                    map: tex,
+                    transparent: true,
+                    opacity: 1,
+                    side: THREE.DoubleSide,
+                    depthTest: false,
+                    depthWrite: false
+                });
+                
+                messageMesh = new THREE.Mesh(geo, mat);
+                messageMesh.renderOrder = 999;
+                messageMesh.position.set(0, -60, 25);
+                messageMesh.scale.set(0,0,0);
+                scene.add(messageMesh);
+            }, undefined, (err) => console.log("Error loading message texture:", err));
+        }
+
+        function setupSinglePhoto() {
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.load(IMG_PHOTO_SINGLE, (tex) => {
+                tex.generateMipmaps = false;
+                tex.minFilter = THREE.LinearFilter;
+                
+                const aspect = tex.image.width / tex.image.height;
+                const h = 40;
+                const w = h * aspect;
+                
+                const geo = new THREE.PlaneGeometry(w, h);
+                const mat = new THREE.MeshBasicMaterial({
+                    map: tex,
+                    transparent: true,
+                    opacity: 0,
+                    side: THREE.DoubleSide
+                });
+                
+                singlePhotoMesh = new THREE.Mesh(geo, mat);
+                singlePhotoMesh.position.set(0, 0, 30);
+                scene.add(singlePhotoMesh);
+            }, undefined, (err) => console.log("Error loading photo texture:", err));
+        }
+
+        // ========== ANIMATION LOOP TỐI ƯU ==========
+        function animate() {
+            if (!isAnimating) return;
+            
+            const now = performance.now();
+            const deltaTime = now - lastFrameTime;
+            
+            // Kiểm soát FPS
+            if (deltaTime < FRAME_TIME) {
+                requestAnimationFrame(animate);
+                return;
+            }
+            
+            lastFrameTime = now - (deltaTime % FRAME_TIME);
+            
+            const dt = Math.min(deltaTime / 1000, 0.033); // Giới hạn delta time
+            
+            // Cập nhật FPS counter
+            frameCount++;
+            if (now - lastFpsTime >= 1000) {
+                currentFps = Math.round((frameCount * 1000) / (now - lastFpsTime));
+                frameCount = 0;
+                lastFpsTime = now;
+                
+                // Tự động điều chỉnh quality dựa trên FPS
+                if (currentFps < 30) {
+                    reduceQuality();
+                } else if (currentFps > 50) {
+                    increaseQuality();
+                }
+            }
+            
+            // Audio visualization
+            let musicBass = 0;
+            if (isAudioSetup && audioAnalyser && audioDataArray) {
+                drawVisualizer();
+                let sum = 0;
+                for (let i = 0; i < 10; i++) { // Chỉ lấy 10 frequency bins
+                    sum += audioDataArray[i];
+                }
+                musicBass = (sum / 10) / 255;
+            }
+            
+            // Update các hệ thống với độ ưu tiên khác nhau
+            updateParticles(dt, musicBass);
+            
+            // Chỉ update glitter và stars mỗi 2 frame
+            if (frameCount % 2 === 0) {
+                updateGlitter(dt);
+                updateFloatingStars(dt);
+                updateAuraRing(dt, musicBass);
+            }
+            
+            // Render
+            composer.render();
+            
+            requestAnimationFrame(animate);
+        }
+
+        // ========== QUALITY ADAPTATION ==========
+        let currentQuality = 'high';
+        
+        function reduceQuality() {
+            if (currentQuality === 'low') return;
+            
+            currentQuality = 'medium';
+            console.log('Reducing quality to medium');
+            
+            // Giảm số lượng particles
+            if (count > 4000) {
+                instancedMesh.count = Math.floor(count * 0.7);
+            }
+            
+            // Tắt bloom
+            bloomPass.enabled = false;
+            
+            // Giảm sparkle count
+            if (sparkleSystem) {
+                sparkleSystem.visible = false;
+            }
+        }
+        
+        function increaseQuality() {
+            if (currentQuality === 'high') return;
+            
+            currentQuality = 'high';
+            console.log('Increasing quality to high');
+            
+            // Khôi phục particles
+            instancedMesh.count = count;
+            
+            // Bật bloom
+            bloomPass.enabled = true;
+            
+            // Bật sparkle
+            if (sparkleSystem) {
+                sparkleSystem.visible = true;
+            }
+        }
+
+        function updateParticles(dt, musicBass = 0) {
+            if (!instancedMesh) return;
+            
+            const time = clock.getElapsedTime();
+            let targetOpacity = 1.0;
+            let targetBloom = 0.0;
+            let moveTarget = 'TARGET';
+            
+            // Tối ưu smooth parallax
+            smoothedParallax.x += (handParallax.x - smoothedParallax.x) * 3.0 * dt;
+            smoothedParallax.y += (handParallax.y - smoothedParallax.y) * 3.0 * dt;
+            
+            const tiltX = smoothedParallax.y * 0.3;
+            const tiltY = smoothedParallax.x * 0.3;
+            const breathingY = Math.sin(time * 0.5) * 0.1;
+
+            if (isLoadingDelay) {
+                loadingDelayTime -= dt;
+                if (loadingDelayTime <= 0) {
+                    isLoadingDelay = false;
+                    setGuide("Nắm tay <span class='highlight'>✊</span> để biến hình, hoặc ghép Tim 🫶");
+                }
+            }
+            
+            const h1 = document.getElementById('main-title');
+            if(h1) {
+                if(appState === 'READING_LETTER') h1.classList.add('hide-title');
+                else h1.classList.remove('hide-title');
+            }
+
+            // State management - tối ưu
+            switch (appState) {
+                case 'FOX':
+                    targetOpacity = 1.0;
+                    targetBloom = 0.0;
+                    if (isLoadingDelay) setGuide("Loading...");
+                    break;
+                    
+                case 'TRANSITION_TO_PEN':
+                    targetOpacity = 0.0;
+                    targetBloom = 4.0;
+                    moveTarget = 'SCATTER';
+                    if (currentOpacity < 0.05) {
+                        useImageData(2);
+                        mainGroup.rotation.set(0,0,0);
+                        appState = 'REASSEMBLING_PEN';
+                    }
+                    break;
+                    
+                case 'REASSEMBLING_PEN':
+                    targetOpacity = 1.0;
+                    targetBloom = 0.0;
+                    moveTarget = 'TARGET';
+                    if (currentOpacity > 0.95) appState = 'PEN';
+                    break;
+                    
+                case 'PEN':
+                    targetOpacity = 1.0;
+                    targetBloom = 0.0;
+                    setGuide("Chụm tay <span class='highlight'>🤌</span> mở thư, hoặc Xòe tay để quay lại");
+                    break;
+                    
+                case 'READING_LETTER':
+                    targetOpacity = 0.4;
+                    targetBloom = 0.3;
+                    setGuide("Xòe tay <span class='highlight'>✋</span> để đóng thư");
+                    break;
+                    
+                case 'BACK_TO_FOX':
+                    targetOpacity = 0.0;
+                    targetBloom = 4.0;
+                    moveTarget = 'SCATTER';
+                    if (currentOpacity < 0.05) {
+                        useImageData(1);
+                        mainGroup.rotation.set(0,0,0);
+                        appState = 'REASSEMBLING_FOX';
+                    }
+                    break;
+                    
+                case 'REASSEMBLING_FOX':
+                    targetOpacity = 1.0;
+                    targetBloom = 0.0;
+                    moveTarget = 'TARGET';
+                    if (currentOpacity > 0.95) {
+                        appState = 'FOX';
+                        updateStatus("Ready");
+                        isLoadingDelay = true;
+                        loadingDelayTime = 1.0; // GIẢM từ 2.0 xuống 1.0
+                        setGuide("Ready...");
+                        interactionLock = Date.now() + 1000; // GIẢM từ 2000 xuống 1000
+                    }
+                    break;
+                    
+                case 'SLIDESHOW':
+                    targetOpacity = 0.0;
+                    targetBloom = 0.0;
+                    moveTarget = 'SCATTER';
+                    setGuide("Xòe tay <span class='highlight'>✋</span> để quay lại.");
+                    break;
+                    
+                case 'VIEW_PHOTO':
+                    targetOpacity = 0.2;
+                    targetBloom = 0.1;
+                    setGuide("Xòe tay <span class='highlight'>✋</span> để quay lại.");
+                    break;
+            }
+
+            // Tối ưu animation updates
+            if (appState === 'VIEW_PHOTO') {
+                animSinglePhoto.opacity += (1.0 - animSinglePhoto.opacity) * 2.0 * dt;
+                animSinglePhoto.scale += (1.0 - animSinglePhoto.scale) * 2.0 * dt;
+            } else {
+                animSinglePhoto.opacity *= 0.9; // Thay vì interpolation chậm
+                animSinglePhoto.scale *= 0.9;
+            }
+            
+            if(singlePhotoMesh) {
+                singlePhotoMesh.material.opacity = animSinglePhoto.opacity;
+                singlePhotoMesh.scale.setScalar(animSinglePhoto.scale);
+                singlePhotoMesh.rotation.x = tiltX * 0.5;
+                singlePhotoMesh.rotation.y = tiltY * 0.5;
+            }
+
+            // Letter animation tối ưu
+            if (appState === 'READING_LETTER') {
+                animLetter.pScale = 0.1;
+                animLetter.pY = -40;
+                animLetter.scale = 1.0;
+                animLetter.y = 0;
+            } else {
+                animLetter.pScale = 1.0;
+                animLetter.pY = 0;
+                animLetter.scale = 0;
+                animLetter.y = -60;
+            }
+
+            // Slideshow tối ưu
+            if (appState === 'SLIDESHOW') {
+                animSlide.opacity = 1.0;
+                const boundary = (totalSlideWidth / 2) + CONFIG.slideGap;
+                
+                slides.forEach((group, idx) => {
+                    group.position.x += CONFIG.slideSpeed * dt;
+                    if (group.position.x > boundary) {
+                        group.position.x -= totalSlideWidth;
+                    }
+                    
+                    group.userData.materials.forEach(m => m.opacity = 1);
+                    group.rotation.y = tiltY * 0.3;
+                });
+                
+                slideshowGroup.rotation.x = tiltX * 0.3;
+            } else {
+                animSlide.opacity = 0;
+                slides.forEach(group => {
+                    group.userData.materials.forEach(m => m.opacity = 0);
+                });
+            }
+
+            // Update transforms
+            mainGroup.scale.setScalar(animLetter.pScale);
+            mainGroup.position.y = animLetter.pY;
+            
+            if (appState === 'TRANSITION_TO_PEN' || appState === 'BACK_TO_FOX') {
+                mainGroup.rotation.z += 2.0 * dt;
+                mainGroup.rotation.x = 0;
+                mainGroup.rotation.y = 0;
+            } else {
+                mainGroup.rotation.x = tiltX;
+                mainGroup.rotation.y = tiltY + breathingY;
+                mainGroup.rotation.z = 0;
+            }
+            
+            if(messageMesh) {
+                messageMesh.scale.setScalar(animLetter.scale);
+                messageMesh.position.y = animLetter.y;
+                messageMesh.rotation.x = tiltX * 0.5;
+                messageMesh.rotation.y = tiltY * 0.5;
+            }
+
+            // Bloom effect tối ưu
+            let beatBloom = targetBloom + (musicBass * 1.5);
+            currentBloomStrength = beatBloom; // Thay vì interpolation chậm
+            bloomPass.strength = currentBloomStrength;
+
+            // Opacity tối ưu
+            if (['TRANSITION_TO_PEN', 'BACK_TO_FOX', 'SLIDESHOW', 'VIEW_PHOTO'].includes(appState)) {
+                currentOpacity -= CONFIG.fadeSpeed * dt;
+            } else if (['REASSEMBLING_PEN', 'REASSEMBLING_FOX'].includes(appState)) {
+                currentOpacity += CONFIG.fadeSpeed * dt;
+            }
+            
+            currentOpacity = Math.max(0, Math.min(1, currentOpacity));
+            instancedMesh.material.opacity = currentOpacity;
+
+            // Tối ưu particle updates
+            const factor = (moveTarget === 'SCATTER' ? 1.0 : 2.5) * dt;
+            const isIdle = (appState === 'FOX' || appState === 'PEN');
+            const isScatter = (moveTarget === 'SCATTER');
+            
+            // Sử dụng while loop nhanh hơn
+            let i = 0;
+            while (i < count) {
+                const i3 = i * 3;
+                let tx, ty, tz;
+                
+                if (isScatter) {
+                    tx = pScatter[i3];
+                    ty = pScatter[i3 + 1];
+                    tz = pScatter[i3 + 2];
+                } else {
+                    tx = pTarget[i3];
+                    ty = pTarget[i3 + 1];
+                    tz = pTarget[i3 + 2];
+                }
+                
+                let cx = pCurrent[i3], cy = pCurrent[i3 + 1], cz = pCurrent[i3 + 2];
+                cx += (tx - cx) * factor;
+                cy += (ty - cy) * factor;
+                cz += (tz - cz) * factor;
+                
+                if (isIdle) {
+                    cx += Math.sin(time + i) * 0.003;
+                    cy += Math.cos(time * 0.8 + i) * 0.003;
+                }
+                
+                pCurrent[i3] = cx;
+                pCurrent[i3 + 1] = cy;
+                pCurrent[i3 + 2] = cz;
+                
+                dummy.position.set(cx, cy, cz);
+                
+                if (isIdle && musicBass > 0.05) {
+                    const scaleEffect = 1.0 + (musicBass * 0.3);
+                    dummy.scale.setScalar(scaleEffect);
+                } else {
+                    dummy.scale.setScalar(1.0);
+                }
+                
+                dummy.updateMatrix();
+                instancedMesh.setMatrixAt(i, dummy.matrix);
+                i++;
+            }
+            
+            instancedMesh.instanceMatrix.needsUpdate = true;
+            
+            // Sparkles tối ưu
+            if(sparkleSystem && isIdle && currentOpacity > 0.5) {
+                const spPos = sparkleSystem.geometry.attributes.position.array;
+                
+                for(let j = 0; j < sparkleIndices.length; j++) {
+                    const idx = sparkleIndices[j] * 3;
+                    const j3 = j * 3;
+                    spPos[j3] = pCurrent[idx];
+                    spPos[j3 + 1] = pCurrent[idx + 1];
+                    spPos[j3 + 2] = pCurrent[idx + 2] + 2.0;
+                }
+                
+                sparkleSystem.visible = true;
+                sparkleSystem.material.opacity = 0.6 + (musicBass * 0.5);
+                sparkleSystem.geometry.attributes.position.needsUpdate = true;
+            } else if (sparkleSystem) {
+                sparkleSystem.visible = false;
+            }
+        }
+
+        function updateGlitter(dt) {
+            if(!glitterSystem) return;
+            
+            const p = glitterSystem.geometry.attributes.position.array;
+            const s = glitterSystem.geometry.attributes.speed.array;
+            const time = clock.elapsedTime;
+            
+            for(let i = 0; i < p.length/3; i++) {
+                const i3 = i * 3;
+                p[i3 + 1] += s[i] * dt;
+                
+                if(p[i3 + 1] > 60) {
+                    p[i3 + 1] = -60;
+                    p[i3] = (Math.random() - 0.5) * 150;
+                }
+            }
+            
+            glitterSystem.geometry.attributes.position.needsUpdate = true;
+        }
+
+        function updateFloatingStars(dt) {
+            if(starSystem) {
+                const p = starSystem.geometry.attributes.position.array;
+                const s = starSystem.geometry.attributes.speed.array;
+                
+                for(let i = 0; i < p.length/3; i++) {
+                    const i3 = i * 3;
+                    p[i3 + 1] += s[i] * dt * 5.0;
+                    
+                    if(p[i3 + 1] > 100) {
+                        p[i3 + 1] = -100;
+                        p[i3] = (Math.random() - 0.5) * 200;
+                    }
+                }
+                
+                starSystem.geometry.attributes.position.needsUpdate = true;
+            }
+            
+            if(whiteStarSystem) {
+                const p = whiteStarSystem.geometry.attributes.position.array;
+                const s = whiteStarSystem.geometry.attributes.speed.array;
+                
+                for(let i = 0; i < p.length/3; i++) {
+                    const i3 = i * 3;
+                    p[i3 + 1] += s[i] * dt * 3.0;
+                    
+                    if(p[i3 + 1] > 120) {
+                        p[i3 + 1] = -120;
+                        p[i3] = (Math.random() - 0.5) * 250;
+                    }
+                }
+                
+                whiteStarSystem.geometry.attributes.position.needsUpdate = true;
+            }
+        }
+
+        function updateAuraRing(dt, bass) {
+            if (!auraRingSystem) return;
+            
+            auraRingSystem.rotation.z += dt * 0.1;
+            auraRingSystem.rotation.y = Math.sin(clock.elapsedTime * 0.5) * 0.1;
+            
+            const targetScale = 1.0 + (bass * 1.0);
+            auraRingSystem.scale.setScalar(targetScale);
+            
+            const targetOpacity = 0.3 + (bass * 2.0);
+            auraRingSystem.material.opacity = Math.min(1.0, targetOpacity);
+        }
+
+        // ========== AUDIO TỐI ƯU ==========
+        function setupAudioSystem() {
+            if (isAudioSetup) return;
+            
+            const audioElement = document.getElementById('audio-bg');
+            if (!audioElement) return;
+            
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContext();
+                
+                // Resume context khi user tương tác
+                document.addEventListener('click', () => {
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                }, { once: true });
+                
+                audioSource = audioContext.createMediaElementSource(audioElement);
+                audioAnalyser = audioContext.createAnalyser();
+                audioAnalyser.fftSize = 128; // GIẢM từ 256 xuống 128
+                audioAnalyser.smoothingTimeConstant = 0.8;
+                
+                audioSource.connect(audioAnalyser);
+                audioAnalyser.connect(audioContext.destination);
+                
+                audioDataArray = new Uint8Array(audioAnalyser.frequencyBinCount);
+                isAudioSetup = true;
+            } catch (e) {
+                console.warn("Web Audio API not supported:", e);
+            }
+        }
+
+        function initVisualizer2D() {
+            visualizerCanvas = document.getElementById('visualizer-canvas');
+            if(visualizerCanvas) {
+                visualizerCtx = visualizerCanvas.getContext('2d', { alpha: false }); // Tắt alpha cho performance
+                const updateSize = () => {
+                    visualizerCanvas.width = visualizerCanvas.offsetWidth;
+                    visualizerCanvas.height = visualizerCanvas.offsetHeight;
+                };
+                updateSize();
+                window.addEventListener('resize', updateSize);
+            }
+        }
+
+        function drawVisualizer() {
+            if (!isAudioSetup || !visualizerCtx || !visualizerCanvas) return;
+            
+            const width = visualizerCanvas.width;
+            const height = visualizerCanvas.height;
+            const ctx = visualizerCtx;
+            
+            // Clear với hiệu năng cao
+            ctx.clearRect(0, 0, width, height);
+            
+            audioAnalyser.getByteFrequencyData(audioDataArray);
+            const barWidth = (width / 32) * 1.5; // Chỉ vẽ 32 bars thay vì tất cả
+            let x = 0;
+            const centerY = height / 2;
+            
+            for (let i = 0; i < 32; i+=2) {
+                const barHeight = (audioDataArray[i] / 255) * height * 0.6;
+                const r = 255;
+                const g = 150 + (i * 3);
+                const b = 200;
+                
+                ctx.fillStyle = `rgb(${r},${g},${b})`; // Không dùng rgba để tăng performance
+                ctx.fillRect(width/2 + x, centerY - barHeight/2, barWidth, barHeight);
+                ctx.fillRect(width/2 - x - barWidth, centerY - barHeight/2, barWidth, barHeight);
+                x += barWidth + 1;
+            }
+        }
+
+        // ========== HAND TRACKING TỐI ƯU ==========
+        async function initMediaPipe() {
+            try {
+                const vision = await FilesetResolver.forVisionTasks("https://unpkg.com/@mediapipe/tasks-vision@0.10.3/wasm");
+                handLandmarker = await HandLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    numHands: 2
+                });
+                
+                video = document.getElementById("webcam");
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 320 }, // GIẢM resolution
+                        height: { ideal: 240 },
+                        frameRate: { ideal: 15 } // GIẢM frame rate
+                    }
+                });
+                
+                video.srcObject = stream;
+                video.addEventListener("loadeddata", predictWebcam);
+            } catch (error) {
+                console.error("MediaPipe initialization failed:", error);
+                updateStatus("Camera error - Using mouse control");
+                setupMouseControl();
+            }
+        }
+
+        // Fallback mouse control
+        function setupMouseControl() {
+            let mouseX = 0, mouseY = 0;
+            
+            document.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX / window.innerWidth - 0.5) * 2.5;
+                mouseY = (e.clientY / window.innerHeight - 0.5) * 2.5;
+                
+                handParallax.x = mouseX;
+                handParallax.y = mouseY;
+            });
+            
+            // Simulate gestures with keyboard
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case 'f': // Fist
+                        changeState('TRANSITION_TO_PEN');
+                        break;
+                    case 'p': // Pinch
+                        changeState('READING_LETTER');
+                        break;
+                    case 'o': // Open
+                        changeState('BACK_TO_FOX');
+                        break;
+                    case 'h': // Heart
+                        changeState('SLIDESHOW');
+                        break;
+                }
+            });
+            
+            setGuide("Use mouse to move, keys: F=Fist, P=Pinch, O=Open, H=Heart");
+        }
+
+        async function predictWebcam() {
+            if (video.currentTime !== lastVideoTime && video.readyState >= 2) {
+                lastVideoTime = video.currentTime;
+                
+                if (handLandmarker && isFoxLoaded && isPenLoaded) {
+                    let startTimeMs = performance.now();
+                    const result = handLandmarker.detectForVideo(video, startTimeMs);
+                    
+                    if (result.landmarks && result.landmarks.length > 0) {
+                        // Calculate hand center - tối ưu
+                        let centerX = 0, centerY = 0;
+                        const firstLandmark = result.landmarks[0];
+                        centerX += firstLandmark[0].x;
+                        centerY += firstLandmark[0].y;
+                        
+                        const targetX = (0.5 - centerX) * 2.5;
+                        const targetY = (0.5 - centerY) * 2.5;
+                        
+                        handParallax.x = targetX; // Thay vì smooth interpolation
+                        handParallax.y = targetY;
+                        
+                        // Detect gestures - tối ưu
+                        const lm = result.landmarks[0];
+                        const thumbTip = lm[4];
+                        const indexTip = lm[8];
+                        
+                        const pinchDist = Math.abs(indexTip.x - thumbTip.x) + Math.abs(indexTip.y - thumbTip.y); // Tính nhanh hơn
+                        
+                        // Simple gesture detection
+                        const isPinch = pinchDist < 0.06;
+                        const isFist = lm[8].y > lm[0].y && lm[12].y > lm[0].y; // Simple check
+                        const isOpen = !isPinch && !isFist;
+                        
+                        // Update gesture buffers
+                        if(isPinch) gestureBuffer.pinch = Math.min(gestureBuffer.pinch + 1, CONFIG.gestureThreshold);
+                        else gestureBuffer.pinch = 0;
+                        
+                        if(isOpen) gestureBuffer.open = Math.min(gestureBuffer.open + 1, CONFIG.gestureThreshold);
+                        else gestureBuffer.open = 0;
+                        
+                        if(isFist) gestureBuffer.fist = Math.min(gestureBuffer.fist + 1, CONFIG.gestureThreshold);
+                        else gestureBuffer.fist = 0;
+                        
+                        // State transitions
+                        if (Date.now() > interactionLock) {
+                            if (appState === 'FOX') {
+                                if (gestureBuffer.fist >= CONFIG.gestureThreshold) changeState('TRANSITION_TO_PEN');
+                            }
+                            else if (appState === 'PEN') {
+                                if (gestureBuffer.pinch >= CONFIG.gestureThreshold) changeState('READING_LETTER');
+                                else if (gestureBuffer.open >= CONFIG.gestureThreshold) changeState('BACK_TO_FOX');
+                            }
+                            else if (['READING_LETTER', 'SLIDESHOW', 'VIEW_PHOTO'].includes(appState)) {
+                                if (gestureBuffer.open >= CONFIG.gestureThreshold) changeState('BACK_TO_FOX');
+                            }
+                        }
+                    } else {
+                        handParallax.x = 0;
+                        handParallax.y = 0;
+                    }
+                }
+            }
+            
+            // Throttle hand tracking
+            setTimeout(() => {
+                requestAnimationFrame(predictWebcam);
+            }, 1000 / 15); // 15 FPS cho hand tracking
+        }
+
+        // ========== STATE MANAGEMENT TỐI ƯU ==========
+        function stopAllAudio() {
+            const a1 = document.getElementById('audio-bg');
+            const a2 = document.getElementById('audio-letter');
+            
+            if (a1) {
+                a1.pause();
+                a1.currentTime = 0;
+            }
+            
+            if (a2) {
+                a2.pause();
+                a2.currentTime = 0;
+            }
+        }
+
+        function changeState(newState) {
+            const now = Date.now();
+            if (now - lastActionTime < 500) return; // GIẢM từ 1000 xuống 500ms
+            if (appState === newState) return;
+            
+            lastActionTime = now;
+            
+            switch(newState) {
+                case 'TRANSITION_TO_PEN':
+                    stopAllAudio();
+                    const a1 = document.getElementById('audio-bg');
+                    if(a1) {
+                        if(!isAudioSetup) setupAudioSystem();
+                        a1.play().catch(e => console.log("Audio blocked:", e));
+                    }
+                    updateStatus("Transforming...");
+                    break;
+                    
+                case 'READING_LETTER':
+                    stopAllAudio();
+                    const a2 = document.getElementById('audio-letter');
+                    if(a2) a2.play().catch(e => console.log("Audio blocked:", e));
+                    updateStatus("Opening...");
+                    break;
+                    
+                case 'BACK_TO_FOX':
+                    stopAllAudio();
+                    updateStatus("Returning...");
+                    break;
+                    
+                case 'SLIDESHOW':
+                    updateStatus("Memories ❤️");
+                    break;
+                    
+                case 'VIEW_PHOTO':
+                    updateStatus("Photo!");
+                    break;
+            }
+            
+            appState = newState;
+        }
+
+        // ========== UI FUNCTIONS ==========
+        function setGuide(txt) {
+            const el = document.getElementById('guide-text');
+            if(el) el.innerHTML = txt;
+        }
+
+        function updateStatus(msg) {
+            const el = document.getElementById('status-bar');
+            if(el) el.innerText = msg;
+        }
+
+        function setupEvents() {
+            const resizeHandler = () => {
+                camera.aspect = window.innerWidth/window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                composer.setSize(window.innerWidth, window.innerHeight);
+                bloomPass.resolution.set(window.innerWidth/8, window.innerHeight/8);
+            };
+            
+            window.addEventListener('resize', resizeHandler);
+            
+            // Debounce resize
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(resizeHandler, 250);
+            });
+        }
+
+        // ========== START APPLICATION ==========
+        // Khởi động ngay khi DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 </html>
